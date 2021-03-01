@@ -1,0 +1,7 @@
+1. Finir la gestion des collisions
+
+2. Finir les tests
+
+3. Corriger quelques erreurs dans le fichier test_runtime.rkt et eventuellement runtime.rkt
+ 
+4. Commencer la question 6

@@ -1,0 +1,211 @@
+#lang scribble/base
+
+
+
+
+
+@title{Documentation du projet : "Acting Shooting Star"}
+
+@author["Ibrahim LMOURID" "Houssam BAHHOU" "Ayoub LASRI" "Eloi MAGON DE LA VILLEHUCHET"]
+
+@table-of-contents[]
+
+
+@section{Introduction}
+L'objectif de ce projet, est d'implémenter un monde d'acteurs, qui interragissent entre eux par le biais de messages.
+Ces messages peuvent avoir différents conséquences sur les nombreux acteurs. :
+@itemlist[#:style 'ordered
+          @item{Mettre à jour l'état de le l'acteur}
+          @item{Émettre d'autres messages}
+          @item{Créer de nouveaux acteurs}
+          @item{Tuer l'un des acteurs}]
+
+Pour réaliser cet objectif, nous avons implémenté plusieurs fonctions, qui permettent de créer, gérer et manipuler les différents acteurs.
+Par conséquent, nous avons écrit cette documentation, pour vous permettre de comprendre le fonctionnement de notre code. 
+
+@section{Gestion des acteurs}
+L'objectif de cette partie est de vous expliquer les fonctions du document @italic{actor.rkt}.
+En effet, ce fichier, contient les fonctions qui gèrent les acteurs, leurs déplacements, ainsi que les interactions entre eux.
+
+@subsection{Les structures}
+D'abord, nous avons défini les acteurs, ainsi que les messages dans le fichier @italic{structures.rkt}:
+
+@subsubsection{Structure "actor"}
+
+@verbatim|{(struct actor (state mailbox location))
+}|
+@italic{Cette structure définit un acteur, par son état "state", sa messagerie "mailbox" et sa position "location"}
+@verbatim|{ }|
+
+@subsubsection{Structure "msg"}
+
+@verbatim|{(struct msg (etiquette coord dest))}|
+
+@italic{Cette structure définit un message par son "etiquette", ses coordonnées "coord" et le destinataire "dest"}
+@verbatim|{ }|
+
+
+
+@subsection{Création et mise à jour des acteurs}
+
+@verbatim|{(create-missile shooter)}|
+
+@italic{Cette fonction crée un acteur qui vérifie : ( = actor-state "shooter")}
+@verbatim|{ }|
+
+
+@verbatim|{(actor-update actorv)}|
+@italic{Cette fonction s'occupe de la mise à jour et de la gestion de la messagerie des acteurs.}
+@verbatim|{ }|
+
+@subsection{Déplacements des acteurs}
+
+@verbatim|{(move x y)}|
+@italic{Cette fonction renvoie un message, dont l'étiquette est "move", qui s'occupe du déplacement aux coordonnées (x, y).}
+@verbatim|{ }|
+
+@verbatim|{(move-right)}|
+@italic{Cette fonction renvoie un message qui permet d'effectuer un déplacement d'un pas vers la droite.}
+@verbatim|{ }|
+
+@verbatim|{(move-left)}|
+@italic{Cette foction renvoie un message qui permet d'effectuer un déplacement d'un pas vers la gauche.}
+@verbatim|{ }|
+
+@subsection{Messages entre les acteurs}
+
+@verbatim|{(actor-send actorv msg)}|
+@italic{Cette fonction envoie le message "msg" à l'acteur "actorv".}
+@verbatim|{ }|
+
+
+
+@subsection{Détection des collisions entre deux acteurs}
+
+@verbatim|{(actor-collision? actor1 actor2)}|
+@italic{Cette fonction renvoie #t en cas de collision entre l'acteur "actor1" et l'acteur "actor2".}
+@verbatim|{ }|
+
+
+
+@section{Gestion du jeu}
+Les fonctions qui s'occupent de la gestion du jeu, sont dans le fichier @italic{runtime.rkt}.
+
+@subsection{Structures}
+
+@verbatim|{(struct world (actors states depth tick))}|
+
+@itemlist[#:style 'ordered
+          @item{actors : @italic{Liste des acteurs.}}
+          @item{states : @italic{Liste des états antérieurs du monde des acteurs.}}
+          @item{depth : @italic{Le nombre d'états duquel on est remonté.}}
+          @item{tick : @italic{Découpage du temps.}}]
+@verbatim|{ }|
+
+Cette structure est gérée par plusieurs fonctions :
+@verbatim|{ }|
+
+@verbatim|{(word-fps w)}|
+@italic{Renvoie le nombre de FPS que le runtime essaie d'assurer (pratique pour débugguer).}
+@verbatim|{ }|
+
+@verbatim|{(word-label s ft)}|
+@italic{Renvoie le titre de la fenêtre contenant l'application}
+@verbatim|{ }|
+
+@verbatim|{(word-output w)}|
+@italic{à partir d'un état du monde, renvoie un objet graphique à afficher .}
+@verbatim|{ }|
+
+@verbatim|{(word-event w e)}|
+@italic{à partir d'un état du monde et d'un événement, renvoie un nouvel état du monde}
+@verbatim|{ }|
+
+@verbatim|{(word-tick w)}|
+@italic{à partir d'un état du monde, crée un nouveau monde apparaissant après un tick d'horloge }
+@verbatim|{ }|
+
+
+@subsection{Gestion des interactions entre les acteurs}
+
+        
+@verbatim|{(world-send msg wrd)}|
+
+
+@italic{Cette fonction envoie msg (de type struct message)  à tous les acteurs de wrd (de type struct world).}
+@verbatim|{ }|
+
+@verbatim|{(world-sendmsgs msgs wrd)}|
+
+
+@italic{Cette fonction envoie une liste des messages 'msgs' aux acteurs de wrd.}
+@verbatim|{ }|
+
+@verbatim|{(update-world wrd)}|
+
+
+@italic{Cette fonction met à jour wrd.}
+@verbatim|{ }|
+
+
+@verbatim|{(collision? actor1 actor2)}|
+
+
+@italic{Cette fonction permet de savoir si un acteur "missile" est en collision avec un autre acteur.}
+@verbatim|{ }|
+
+@verbatim|{(collision1 actors actor1 actor2)}|
+
+
+@italic{Cette fonction supprime les acteurs "actor1" et "actor2" de la liste des acteurs "actors".} 
+@verbatim|{ }|
+
+@verbatim|{(collision-world actors actor)}|
+
+
+@italic{Cette fonction supprime tous les acteurs (de la liste "actors"), qui sont en collision avec l'acteur "actor"}
+@verbatim|{ }|
+
+@verbatim|{(collision2 actors)}|
+
+
+@italic{Cette fonction gère les collisions, en supprimant tous les acteurs qui sont en collision.} 
+@verbatim|{ }|
+
+@verbatim|{(final-update w)}|
+@italic{Renvoie la liste final des acteurs à chaque "tick" après toute modification (collision, mouvement, collision avec les bordures).}
+@verbatim|{ }|
+
+@subsection{Gestion de l'affichage et de l'animation}
+
+@verbatim|{(display-world wrd)}|
+
+@italic{Cette fonction s'occupe de l'affichage des acteurs du wrd (de type struct world).}
+@verbatim|{ }|
+
+
+@verbatim|{(display-position actors [width 90] [height 20])}|
+
+
+@italic{Cette fonction permet d'attribuer à chaque acteur un symbole, selon son type, (afin de différentier les différents types d'acteurs lors de l'affichage).}
+@verbatim|{ }|
+
+@verbatim|{(bordures actors)}|
+
+
+@italic{Cette fonction s'occupe de la gestion des bordure.}
+@verbatim|{ }|
+
+@verbatim|{(start-application)}|
+
+@italic{Cette fonction permet de lancer le jeu.}
+@verbatim|{ }|
+
+
+
+
+@subsection{Fin du jeu}
+
+@verbatim|{(game-over actors)}|
+
+@italic{Cette fonction permet d'arrêter le jeu en cas de collision qui fait disparaître l'acteur principal.}

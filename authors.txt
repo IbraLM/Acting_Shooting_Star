@@ -1,0 +1,15 @@
+Nom: Lmourid
+Prénom: Ibrahim
+E-mail: ibrahim.lmourid@bordeaux-inp.fr
+
+Nom: Lasri
+Prénom: Ayoub
+E-mail: ayoub.lasri@bordeaux-inp.fr
+
+Nom: Bahhou
+Prénom: Houssam
+E-mail: houssam.bahhou@bordeaux-inp.fr
+
+Nom: Magon De La Villehuchet
+Prénom: Eloi
+E-mail: eloi.magon_de_la_villehuchet@bordeaux-inp.fr

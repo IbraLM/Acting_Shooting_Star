@@ -1,0 +1,118 @@
+#lang racket
+
+(provide actor-update actor-send create-missile actor-collision?)
+
+(require "structures.rkt")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Fonction qui envoie un message ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; cette fonction envoie un message à l'acteur, et retourne un nouveau acteur avec ce message
+(define (actor-send actorv msg)
+  (define newactor (actor (actor-state actorv) (append (actor-mailbox actorv) (list msg)) (actor-location actorv)))
+  newactor)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Création d'un acteur missile ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; cette fonction crée un acteur appelé "missile"
+
+(define (create-missile actorv)
+  (cond 
+  [(equal? (actor-state actorv) "shooter") (actor "missile" '() (list (+ 1 (car (actor-location actorv))) (cadr (actor-location actorv))))]
+  [else  (actor "missile-wall" '() (list (car (actor-location actorv)) (cadr (actor-location actorv))))]))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Déplacement des acteurs ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;déplacement à la position (x, y)
+(define (move x y)
+  (msg "move" (list x y) null))
+
+
+; déplacement à droite
+(define move-right
+  (msg "move" '(1 0) "everyone"))
+
+
+; déplacement à gauche
+(define move-left
+  (msg "move" '(-1 0) "everyone"))
+
+; déplacement à gauche
+(define move-left2
+  (msg "move" '(-2 0) "everyone"))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Mise à jour des acteurs ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (actor-update actorv)
+  (letrec ((first-msg (lambda(act msg)
+                         (cond
+                          [(equal? (msg-etiquette msg) "move")(cond
+                           [(equal? (actor-state act) "shooter")
+                           (list
+                            (list (actor (actor-state act) (cdr (actor-mailbox act)) (map + (actor-location act)(msg-coord msg))))
+                            (list))]
+                           [(equal? (actor-state act) "missile")
+                           (list
+                            (list (actor (actor-state act) (cdr (actor-mailbox act)) (map + (actor-location act)(msg-coord move-right))))
+                            (list))]
+                            [(or (equal? (actor-state act) "wall") (equal? (actor-state act) "enemy"))
+                           (list
+                            (list (actor (actor-state act) (cdr (actor-mailbox act)) (map + (actor-location act)(msg-coord move-left))))
+                            (list))]
+                             [(equal? (actor-state act) "missile-wall")
+                           (list
+                            (list (actor (actor-state act) (cdr (actor-mailbox act)) (map + (actor-location act)(msg-coord move-left2))))
+                            (list))]
+                             [(or (equal? (actor-state act) "score") (equal? (actor-state act) "title") (equal? (actor-state act) "travel"))
+                           (list
+                            (list (actor (actor-state act) (cdr (actor-mailbox act)) (actor-location act)))
+                            (list))]
+                           [else
+                            (list
+                            (list (actor (actor-state act) (cdr (actor-mailbox act)) (map + (actor-location act)(msg-coord msg))))
+                            (list))])]
+
+                          [(equal? (msg-etiquette msg) "new actors")(cond
+                                                         [(and (equal? (actor-state act) "shooter") (equal? (msg-dest msg) "shooter"))
+                                                          (list
+                                                           (append
+                                                            (list (actor (actor-state act) (cdr (actor-mailbox act)) (actor-location act)))
+                                                            (list (create-missile act))) (list))]
+                                                           [(and (equal? (actor-state act) "enemy") (equal? (msg-dest msg) "enemy"))
+                                                          (list
+                                                           (append
+                                                            (list (actor (actor-state act) (cdr (actor-mailbox act)) (actor-location act)))
+                                                            (list (create-missile act))) (list))]
+                                                         [else (list
+                                                                (list (actor (actor-state act) (cdr (actor-mailbox act)) (actor-location act)))
+                                                                (list))])]
+
+                          [else (list
+                                 (list (actor (actor-state act) (cdr (actor-mailbox act)) (actor-location act))) '())])))
+
+           (actor-update-rec
+            (lambda(actr)
+              (cond
+                [(null? (actor-mailbox actr)) (list (list actr) (list))]
+                [else (list
+                       (append
+                        (car (actor-update-rec (caar (first-msg actr (car (actor-mailbox actr))))))
+                        (cdar (first-msg actr (car (actor-mailbox actr)))))
+                       (append
+                        (cadr (actor-update-rec (caar (first-msg actr (car (actor-mailbox actr))))))
+                        (cadr (first-msg actr (car (actor-mailbox actr))))))]))))
+    (actor-update-rec actorv)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Détection des collisions entre deux acteurs ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; renvoie vrai en cas de collision entre actor1 et actor2
+(define (actor-collision? actor1 actor2)
+  (cond
+    [(equal? actor1 actor2) #f]
+    [(equal? (actor-location actor1) (actor-location actor2)) #t]
+    [else #f]
+    ))
+
